@@ -1,31 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { FolderOpen, Home, Music } from "lucide-react";
-import { open } from "@tauri-apps/plugin-dialog";
-import { invoke } from "@tauri-apps/api/core";
+import { Home, Music, Settings as SettingsIcon } from "lucide-react";
+
+type View = "library" | "settings";
 
 interface SidebarProps {
-  onIndexed: () => void;
+  currentView: View;
+  onViewChange: (view: View) => void;
 }
 
-export function Sidebar({ onIndexed }: SidebarProps) {
-  const handleIndexFolder = async () => {
-    try {
-      const selected = await open({
-        directory: true,
-        multiple: false,
-        title: "Select Music Folder",
-      });
-
-      if (selected && typeof selected === "string") {
-        await invoke("index_folder", { path: selected });
-        onIndexed();
-      }
-    } catch (error) {
-      console.error("Failed to index folder:", error);
-    }
-  };
-
+export function Sidebar({ currentView, onViewChange }: SidebarProps) {
   return (
     <div className="w-64 bg-sidebar border-r border-sidebar-border h-full flex flex-col">
       <div className="p-6">
@@ -36,31 +20,20 @@ export function Sidebar({ onIndexed }: SidebarProps) {
 
       <div className="flex-1 p-4 space-y-2">
         <Button
-          variant="ghost"
+          variant={currentView === "library" ? "secondary" : "ghost"}
           className="w-full justify-start gap-3"
-        >
-          <Home className="w-5 h-5" />
-          Home
-        </Button>
-        <Button
-          variant="ghost"
-          className="w-full justify-start gap-3"
+          onClick={() => onViewChange("library")}
         >
           <Music className="w-5 h-5" />
           Your Library
         </Button>
-      </div>
-
-      <Separator />
-
-      <div className="p-4">
         <Button
-          onClick={handleIndexFolder}
-          className="w-full gap-2"
-          variant="default"
+          variant={currentView === "settings" ? "secondary" : "ghost"}
+          className="w-full justify-start gap-3"
+          onClick={() => onViewChange("settings")}
         >
-          <FolderOpen className="w-5 h-5" />
-          Index Folder
+          <SettingsIcon className="w-5 h-5" />
+          Settings
         </Button>
       </div>
     </div>
