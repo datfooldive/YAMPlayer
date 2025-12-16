@@ -8,9 +8,29 @@ interface PlayerControlsProps {
   currentTrack: string | null;
 }
 
+function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
 export function PlayerControls({ currentTrack }: PlayerControlsProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState([50]);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [totalDuration, setTotalDuration] = useState<number | null>(null);
+
+  useEffect(() => {
+    const loadVolume = async () => {
+      try {
+        const vol = await invoke<number>("get_volume");
+        setVolume([(vol * 100) as number]);
+      } catch (error) {
+        console.error("Failed to load volume:", error);
+      }
+    };
+    loadVolume();
+  }, []);
 
   useEffect(() => {
     const checkPlaying = async () => {
@@ -22,7 +42,22 @@ export function PlayerControls({ currentTrack }: PlayerControlsProps) {
       }
     };
 
-    const interval = setInterval(checkPlaying, 500);
+    const updatePosition = async () => {
+      try {
+        const [elapsed, total] = await invoke<[number, number | null]>("get_playback_position");
+        setCurrentTime(elapsed);
+        if (total !== null) {
+          setTotalDuration(total);
+        }
+      } catch (error) {
+        console.error("Failed to get playback position:", error);
+      }
+    };
+
+    const interval = setInterval(() => {
+      checkPlaying();
+      updatePosition();
+    }, 500);
     return () => clearInterval(interval);
   }, [currentTrack]);
 
@@ -39,12 +74,12 @@ export function PlayerControls({ currentTrack }: PlayerControlsProps) {
     }
   };
 
-  const handleStop = async () => {
+  const handleVolumeChange = async (value: number[]) => {
+    setVolume(value);
     try {
-      await invoke("stop_music");
-      setIsPlaying(false);
+      await invoke("set_volume", { volume: value[0] / 100 });
     } catch (error) {
-      console.error("Failed to stop:", error);
+      console.error("Failed to set volume:", error);
     }
   };
 
@@ -60,7 +95,9 @@ export function PlayerControls({ currentTrack }: PlayerControlsProps) {
     <div className="h-24 bg-background border-t border-border flex items-center px-6 gap-6">
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium truncate">{trackName}</div>
-        <div className="text-xs text-muted-foreground">Now playing</div>
+        <div className="text-xs text-muted-foreground">
+          {formatTime(currentTime)} {totalDuration !== null && ` / ${formatTime(totalDuration)}`}
+        </div>
       </div>
 
       <div className="flex items-center gap-2">
@@ -99,7 +136,7 @@ export function PlayerControls({ currentTrack }: PlayerControlsProps) {
         <Volume2 className="w-4 h-4 text-muted-foreground" />
         <Slider
           value={volume}
-          onValueChange={setVolume}
+          onValueChange={handleVolumeChange}
           max={100}
           step={1}
           className="flex-1"

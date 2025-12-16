@@ -1,4 +1,5 @@
 use rodio::Sink;
+use std::time::{Duration, Instant};
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct MusicFile {
@@ -17,5 +18,9 @@ pub struct AudioState {
     pub sink: Option<Sink>,
     pub current_track: Option<String>,
     pub tracks: Vec<MusicFile>,
+    pub volume: f32,
+    pub playback_start: Option<Instant>,
+    pub paused_elapsed: Duration,
+    pub total_duration: Option<Duration>,
 }
 

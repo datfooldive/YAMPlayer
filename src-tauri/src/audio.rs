@@ -1,5 +1,6 @@
 use std::sync::{Arc, Mutex};
-use rodio::{Decoder, OutputStreamHandle, Sink};
+use std::time::{Duration, Instant};
+use rodio::{Decoder, OutputStreamHandle, Sink, Source};
 use std::fs::File;
 use std::io::BufReader;
 use once_cell::sync::Lazy;
@@ -30,6 +31,10 @@ pub fn get_audio_state() -> Arc<Mutex<AudioState>> {
             sink: None,
             current_track: None,
             tracks: Vec::new(),
+            volume: 0.5,
+            playback_start: None,
+            paused_elapsed: Duration::ZERO,
+            total_duration: None,
         }));
         *state = Some(audio_state.clone());
         audio_state
@@ -59,42 +64,61 @@ pub fn play_music(path: String) -> Result<(), String> {
     let source = Decoder::new(BufReader::new(file))
         .map_err(|e| format!("Failed to decode audio: {}", e))?;
 
+    let total_duration = source.total_duration();
+    let volume = audio_state.volume;
+
     let sink = Sink::try_new(stream_handle)
         .map_err(|e| format!("Failed to create sink: {}", e))?;
 
-    sink.append(source);
+    let file2 = File::open(&path)
+        .map_err(|e| format!("Failed to open file: {}", e))?;
+    let source2 = Decoder::new(BufReader::new(file2))
+        .map_err(|e| format!("Failed to decode audio: {}", e))?;
+
+    sink.set_volume(volume);
+    sink.append(source2);
     sink.play();
 
     audio_state.sink = Some(sink);
     audio_state.current_track = Some(path);
+    audio_state.playback_start = Some(Instant::now());
+    audio_state.paused_elapsed = Duration::ZERO;
+    audio_state.total_duration = total_duration;
 
     Ok(())
 }
 
 pub fn pause_music() -> Result<(), String> {
     let state = get_audio_state();
-    let audio_state = state.lock().unwrap();
+    let mut audio_state = state.lock().unwrap();
     if let Some(sink) = &audio_state.sink {
         sink.pause();
+        if let Some(start) = audio_state.playback_start {
+            audio_state.paused_elapsed += start.elapsed();
+            audio_state.playback_start = None;
+        }
     }
     Ok(())
 }
 
 pub fn resume_music() -> Result<(), String> {
     let state = get_audio_state();
-    let audio_state = state.lock().unwrap();
+    let mut audio_state = state.lock().unwrap();
     if let Some(sink) = &audio_state.sink {
         sink.play();
+        audio_state.playback_start = Some(Instant::now());
     }
     Ok(())
 }
 
 pub fn stop_music() -> Result<(), String> {
     let state = get_audio_state();
-    let audio_state = state.lock().unwrap();
+    let mut audio_state = state.lock().unwrap();
     if let Some(sink) = &audio_state.sink {
         sink.stop();
     }
+    audio_state.playback_start = None;
+    audio_state.paused_elapsed = Duration::ZERO;
     Ok(())
 }
 
@@ -118,5 +142,35 @@ pub fn list_music() -> Result<Vec<MusicFile>, String> {
     let state = get_audio_state();
     let tracks = state.lock().unwrap().tracks.clone();
     Ok(tracks)
+}
+
+pub fn set_volume(volume: f32) -> Result<(), String> {
+    let state = get_audio_state();
+    let mut audio_state = state.lock().unwrap();
+    audio_state.volume = volume;
+    if let Some(sink) = &audio_state.sink {
+        sink.set_volume(volume);
+    }
+    Ok(())
+}
+
+pub fn get_volume() -> Result<f32, String> {
+    let state = get_audio_state();
+    let audio_state = state.lock().unwrap();
+    Ok(audio_state.volume)
+}
+
+pub fn get_playback_position() -> Result<(f64, Option<f64>), String> {
+    let state = get_audio_state();
+    let audio_state = state.lock().unwrap();
+    
+    let mut elapsed = audio_state.paused_elapsed.as_secs_f64();
+    if let Some(start) = audio_state.playback_start {
+        elapsed += start.elapsed().as_secs_f64();
+    }
+
+    let total = audio_state.total_duration.map(|d| d.as_secs_f64());
+
+    Ok((elapsed, total))
 }
 

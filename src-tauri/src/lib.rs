@@ -85,6 +85,21 @@ fn is_playing() -> Result<bool, String> {
     audio::is_playing()
 }
 
+#[tauri::command]
+fn set_volume(volume: f32) -> Result<(), String> {
+    audio::set_volume(volume)
+}
+
+#[tauri::command]
+fn get_volume() -> Result<f32, String> {
+    audio::get_volume()
+}
+
+#[tauri::command]
+fn get_playback_position() -> Result<(f64, Option<f64>), String> {
+    audio::get_playback_position()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -102,7 +117,10 @@ pub fn run() {
             resume_music,
             stop_music,
             get_current_track,
-            is_playing
+            is_playing,
+            set_volume,
+            get_volume,
+            get_playback_position
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
