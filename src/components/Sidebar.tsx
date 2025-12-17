@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { AudioWaveformIcon, Music, Settings as SettingsIcon } from "lucide-react";
 
-type View = "library" | "settings";
+type View = "library" | "settings" | "nowPlaying";
 
 interface SidebarProps {
   currentView: View;

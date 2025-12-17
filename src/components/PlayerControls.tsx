@@ -70,9 +70,10 @@ export function PlayerControls({ currentTrack, trackInfo, loadCurrentTrack }: Pl
     const interval = setInterval(() => {
       checkPlaying();
       updatePosition();
+      loadCurrentTrack();
     }, 500);
     return () => clearInterval(interval);
-  }, [currentTrack, isSeeking]);
+  }, [currentTrack, isSeeking, loadCurrentTrack]);
 
   const handlePlayPause = async () => {
     try {
