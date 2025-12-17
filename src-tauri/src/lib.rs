@@ -110,6 +110,16 @@ fn seek(position_secs: f64) -> Result<(), String> {
     audio::seek(position_secs)
 }
 
+#[tauri::command]
+fn play_next() -> Result<(), String> {
+    audio::play_next()
+}
+
+#[tauri::command]
+fn play_previous() -> Result<(), String> {
+    audio::play_previous()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -132,7 +142,9 @@ pub fn run() {
             set_volume,
             get_volume,
             get_playback_position,
-            seek
+            seek,
+            play_next,
+            play_previous
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

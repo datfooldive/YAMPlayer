@@ -7,6 +7,7 @@ import { Play, Pause, SkipBack, SkipForward, Volume2 } from "lucide-react";
 interface PlayerControlsProps {
   currentTrack: string | null;
   trackInfo: TrackInfo | null;
+  loadCurrentTrack: () => void;
 }
 
 function formatTime(seconds: number): string {
@@ -24,7 +25,7 @@ interface TrackInfo {
   thumbnail: string | null;
 }
 
-export function PlayerControls({ currentTrack, trackInfo }: PlayerControlsProps) {
+export function PlayerControls({ currentTrack, trackInfo, loadCurrentTrack }: PlayerControlsProps) {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [volume, setVolume] = useState<number[]>([50]);
   const [currentTime, setCurrentTime] = useState<number>(0);
@@ -104,10 +105,22 @@ export function PlayerControls({ currentTrack, trackInfo }: PlayerControlsProps)
     invoke("seek", { positionSecs: value[0] }).catch(console.error);
   };
 
-  const handleSkipBack = () => {
+  const handleSkipBack = async () => {
+    try {
+      await invoke("play_previous");
+      loadCurrentTrack();
+    } catch (error) {
+      console.error("Failed to skip back:", error);
+    }
   };
 
-  const handleSkipForward = () => {
+  const handleSkipForward = async () => {
+    try {
+      await invoke("play_next");
+      loadCurrentTrack();
+    } catch (error) {
+      console.error("Failed to skip forward:", error);
+    }
   };
 
   const displayName = trackInfo

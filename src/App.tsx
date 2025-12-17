@@ -115,7 +115,11 @@ function App() {
             </div>
           )}
           {currentView !== "settings" && (
-            <PlayerControls currentTrack={currentTrack} trackInfo={trackInfo} />
+            <PlayerControls 
+              currentTrack={currentTrack} 
+              trackInfo={trackInfo} 
+              loadCurrentTrack={loadCurrentTrack} 
+            />
           )}
         </div>
       </div>

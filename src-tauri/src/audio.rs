@@ -256,3 +256,39 @@ pub fn get_playback_position() -> Result<(f64, Option<f64>), String> {
 
     Ok((elapsed, total))
 }
+
+pub fn play_next() -> Result<(), String> {
+    let state = get_audio_state();
+    let audio_state = state.lock().unwrap();
+
+    if let Some(current_path) = audio_state.current_track.clone() {
+        let tracks = audio_state.tracks.clone();
+        if let Some(current_index) = tracks.iter().position(|t| t.path == current_path) {
+            if current_index < tracks.len() - 1 {
+                let next_track_path = tracks[current_index + 1].path.clone();
+                drop(audio_state);
+                play_music(next_track_path)?;
+            }
+        }
+    }
+
+    Ok(())
+}
+
+pub fn play_previous() -> Result<(), String> {
+    let state = get_audio_state();
+    let audio_state = state.lock().unwrap();
+
+    if let Some(current_path) = audio_state.current_track.clone() {
+        let tracks = audio_state.tracks.clone();
+        if let Some(current_index) = tracks.iter().position(|t| t.path == current_path) {
+            if current_index > 0 {
+                let prev_track_path = tracks[current_index - 1].path.clone();
+                drop(audio_state);
+                play_music(prev_track_path)?;
+            }
+        }
+    }
+
+    Ok(())
+}
