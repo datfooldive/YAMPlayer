@@ -6,6 +6,7 @@ import { Play, Pause, SkipBack, SkipForward, Volume2 } from "lucide-react";
 
 interface PlayerControlsProps {
   currentTrack: string | null;
+  trackInfo: TrackInfo | null;
 }
 
 function formatTime(seconds: number): string {
@@ -20,14 +21,14 @@ interface TrackInfo {
   artist: string | null;
   album: string | null;
   title: string | null;
+  thumbnail: string | null;
 }
 
-export function PlayerControls({ currentTrack }: PlayerControlsProps) {
+export function PlayerControls({ currentTrack, trackInfo }: PlayerControlsProps) {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [volume, setVolume] = useState<number[]>([50]);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [totalDuration, setTotalDuration] = useState<number | null>(null);
-  const [trackInfo, setTrackInfo] = useState<TrackInfo | null>(null);
   const [isSeeking, setIsSeeking] = useState(false);
 
   useEffect(() => {
@@ -41,22 +42,6 @@ export function PlayerControls({ currentTrack }: PlayerControlsProps) {
     };
     loadVolume();
   }, []);
-
-  useEffect(() => {
-    const loadTrackInfo = async () => {
-      if (currentTrack) {
-        try {
-          const info = await invoke<TrackInfo | null>("get_current_track_info");
-          setTrackInfo(info);
-        } catch (error) {
-          console.error("Failed to load track info:", error);
-        }
-      } else {
-        setTrackInfo(null);
-      }
-    };
-    loadTrackInfo();
-  }, [currentTrack]);
 
   useEffect(() => {
     const checkPlaying = async () => {

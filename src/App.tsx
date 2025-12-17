@@ -4,11 +4,22 @@ import { Sidebar } from "@/components/Sidebar";
 import { MusicList } from "@/components/MusicList";
 import { PlayerControls } from "@/components/PlayerControls";
 import { Settings } from "@/components/Settings";
+import { NowPlayingView } from "./components/NowPlayingView";
 
-type View = "library" | "settings";
+type View = "library" | "settings" | "nowPlaying";
+
+interface TrackInfo {
+  path: string;
+  name: string;
+  artist: string | null;
+  album: string | null;
+  title: string | null;
+  thumbnail: string | null;
+}
 
 function App() {
   const [currentTrack, setCurrentTrack] = useState<string | null>(null);
+  const [trackInfo, setTrackInfo] = useState<TrackInfo | null>(null);
   const [refreshKey, setRefreshKey] = useState<number>(0);
   const [currentView, setCurrentView] = useState<View>("library");
 
@@ -16,6 +27,22 @@ function App() {
     loadCurrentTrack();
     loadTracksFromDb();
   }, []);
+
+  useEffect(() => {
+    const loadTrackInfo = async () => {
+      if (currentTrack) {
+        try {
+          const info = await invoke<TrackInfo | null>("get_current_track_info");
+          setTrackInfo(info);
+        } catch (error) {
+          console.error("Failed to load track info:", error);
+        }
+      } else {
+        setTrackInfo(null);
+      }
+    };
+    loadTrackInfo();
+  }, [currentTrack]);
 
   const loadCurrentTrack = async () => {
     try {
@@ -37,12 +64,21 @@ function App() {
 
   const handlePlay = async (path: string) => {
     try {
+      if (currentTrack === path) {
+        setCurrentView("nowPlaying");
+        return;
+      }
       await invoke("play_music", { path });
       setCurrentTrack(path);
+      setCurrentView("nowPlaying");
     } catch (error) {
       console.error("Failed to play music:", error);
     }
   };
+
+  const handleBack = () => {
+    setCurrentView("library");
+  }
 
   const handleIndexed = () => {
     setRefreshKey((prev) => prev + 1);
@@ -55,20 +91,31 @@ function App() {
       <div className="flex flex-1 overflow-hidden">
         <Sidebar currentView={currentView} onViewChange={setCurrentView} />
         <div className="flex-1 flex flex-col overflow-hidden">
-          {currentView === "library" ? (
-            <>
-              <div className="flex-1 overflow-hidden bg-linear-to-b from-background to-background/95">
-                <div className="h-full p-6">
-                  <h2 className="text-3xl font-bold mb-6">Your Library</h2>
-                  <MusicList key={refreshKey} onPlay={handlePlay} currentTrack={currentTrack} />
-                </div>
+          {currentView === "library" && (
+            <div className="flex-1 overflow-hidden bg-linear-to-b from-background to-background/95">
+              <div className="h-full p-6">
+                <h2 className="text-3xl font-bold mb-6">Your Library</h2>
+                <MusicList key={refreshKey} onPlay={handlePlay} currentTrack={currentTrack} />
               </div>
-              <PlayerControls currentTrack={currentTrack} />
-            </>
-          ) : (
+            </div>
+          )}
+          {currentView === "nowPlaying" && (
+            <div className="flex-1 overflow-hidden">
+              <NowPlayingView 
+                currentTrack={currentTrack} 
+                trackInfo={trackInfo}
+                onPlay={handlePlay} 
+                onBack={handleBack} 
+              />
+            </div>
+          )}
+          {currentView === "settings" && (
             <div className="flex-1 overflow-hidden">
               <Settings onIndexed={handleIndexed} />
             </div>
+          )}
+          {currentView !== "settings" && (
+            <PlayerControls currentTrack={currentTrack} trackInfo={trackInfo} />
           )}
         </div>
       </div>
