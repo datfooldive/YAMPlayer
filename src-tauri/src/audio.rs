@@ -176,7 +176,7 @@ pub fn get_volume() -> Result<f32, String> {
 
 pub fn get_playback_position() -> Result<(f64, Option<f64>), String> {
     let state = get_audio_state();
-    let audio_state = state.lock().unwrap();
+    let mut audio_state = state.lock().unwrap();
 
     let mut elapsed = audio_state.paused_elapsed.as_secs_f64();
     if let Some(start) = audio_state.playback_start {
@@ -184,6 +184,29 @@ pub fn get_playback_position() -> Result<(f64, Option<f64>), String> {
     }
 
     let total = audio_state.total_duration.map(|d| d.as_secs_f64());
+
+    let mut next_track_path: Option<String> = None;
+
+    if let Some(sink) = &audio_state.sink {
+        if sink.empty() {
+            if let Some(current_path) = &audio_state.current_track {
+                if audio_state.playback_start.is_some() {
+                    let tracks = &audio_state.tracks;
+                    if let Some(current_index) = tracks.iter().position(|t| t.path == *current_path) {
+                        if current_index < tracks.len() - 1 {
+                            next_track_path = Some(tracks[current_index + 1].path.clone());
+                            audio_state.playback_start = None;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if let Some(path) = next_track_path {
+        drop(audio_state);
+        let _ = play_music(path);
+    }
 
     Ok((elapsed, total))
 }

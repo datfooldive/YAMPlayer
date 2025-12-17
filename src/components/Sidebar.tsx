@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Music, Settings as SettingsIcon } from "lucide-react";
+import { AudioWaveformIcon, Music, Settings as SettingsIcon } from "lucide-react";
 
 type View = "library" | "settings";
 
@@ -12,8 +12,9 @@ interface SidebarProps {
 export function Sidebar({ currentView, onViewChange }: SidebarProps) {
   return (
     <div className="w-64 bg-sidebar border-r border-sidebar-border h-full flex flex-col">
-      <div className="p-6">
-        <h1 className="text-2xl font-bold">Music Player</h1>
+      <div className="p-6 flex items-center justify-center">
+        <AudioWaveformIcon className="w-6 h-6 mr-1.5" />
+        <h1 className="text-xl font-bold">YAMPlayer</h1>
       </div>
 
       <Separator />
