@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { invoke } from '@tauri-apps/api/core';
+import { create } from "zustand";
+import { invoke } from "@tauri-apps/api/core";
 
 export interface TrackInfo {
   path: string;
@@ -15,7 +15,7 @@ interface MusicPlayerState {
   trackInfo: TrackInfo | null;
   isPlaying: boolean;
   refreshKey: number;
-  
+
   // Actions
   setCurrentTrack: (track: string | null) => void;
   setTrackInfo: (info: TrackInfo | null) => void;
@@ -43,20 +43,21 @@ export const useMusicStore = create<MusicPlayerState>((set, get) => ({
   },
 
   setTrackInfo: (info) => set({ trackInfo: info }),
-  
+
   setIsPlaying: (playing) => set({ isPlaying: playing }),
-  
-  incrementRefreshKey: () => set((state) => ({ refreshKey: state.refreshKey + 1 })),
+
+  incrementRefreshKey: () =>
+    set((state) => ({ refreshKey: state.refreshKey + 1 })),
 
   loadCurrentTrack: async () => {
     try {
-      const track = await invoke<string | null>('get_current_track');
+      const track = await invoke<string | null>("get_current_track");
       set({ currentTrack: track });
       if (track) {
         get().loadTrackInfo();
       }
     } catch (error) {
-      console.error('Failed to load current track:', error);
+      console.error("Failed to load current track:", error);
     }
   },
 
@@ -64,10 +65,10 @@ export const useMusicStore = create<MusicPlayerState>((set, get) => ({
     const { currentTrack } = get();
     if (currentTrack) {
       try {
-        const info = await invoke<TrackInfo | null>('get_current_track_info');
+        const info = await invoke<TrackInfo | null>("get_current_track_info");
         set({ trackInfo: info });
       } catch (error) {
-        console.error('Failed to load track info:', error);
+        console.error("Failed to load track info:", error);
       }
     } else {
       set({ trackInfo: null });
@@ -76,29 +77,29 @@ export const useMusicStore = create<MusicPlayerState>((set, get) => ({
 
   playMusic: async (path: string) => {
     try {
-      await invoke('play_music', { path });
+      await invoke("play_music", { path });
       set({ currentTrack: path, isPlaying: true });
       get().loadTrackInfo();
     } catch (error) {
-      console.error('Failed to play music:', error);
+      console.error("Failed to play music:", error);
     }
   },
 
   pauseMusic: async () => {
     try {
-      await invoke('pause_music');
+      await invoke("pause_music");
       set({ isPlaying: false });
     } catch (error) {
-      console.error('Failed to pause music:', error);
+      console.error("Failed to pause music:", error);
     }
   },
 
   resumeMusic: async () => {
     try {
-      await invoke('resume_music');
+      await invoke("resume_music");
       set({ isPlaying: true });
     } catch (error) {
-      console.error('Failed to resume music:', error);
+      console.error("Failed to resume music:", error);
     }
   },
 
@@ -113,19 +114,19 @@ export const useMusicStore = create<MusicPlayerState>((set, get) => ({
 
   checkPlaying: async () => {
     try {
-      const playing = await invoke<boolean>('is_playing');
+      const playing = await invoke<boolean>("is_playing");
       set({ isPlaying: playing });
     } catch (error) {
-      console.error('Failed to check playing state:', error);
+      console.error("Failed to check playing state:", error);
     }
   },
 
   loadTracksFromDb: async () => {
     try {
-      await invoke('load_from_db');
+      await invoke("load_from_db");
       get().incrementRefreshKey();
     } catch (error) {
-      console.error('Failed to load tracks from database:', error);
+      console.error("Failed to load tracks from database:", error);
     }
   },
 }));

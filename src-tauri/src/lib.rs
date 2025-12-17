@@ -10,13 +10,13 @@ use crate::models::IndexedFolder;
 #[tauri::command]
 fn index_folder(path: String, app: AppHandle) -> Result<Vec<MusicFile>, String> {
     let music_files = indexing::scan_folder(&path);
-    
+
     let conn = db::get_db_connection(&app)?;
     let folder_id = db::save_folder(&conn, &path)?;
     db::save_tracks(&conn, folder_id, &music_files)?;
-    
+
     audio::set_tracks(music_files.clone());
-    
+
     Ok(music_files)
 }
 
@@ -43,10 +43,10 @@ fn check_for_changes(app: AppHandle) -> Result<bool, String> {
 fn remove_folder(folder_id: i64, app: AppHandle) -> Result<(), String> {
     let conn = db::get_db_connection(&app)?;
     db::remove_folder(&conn, folder_id)?;
-    
+
     let tracks = db::load_tracks(&conn)?;
     audio::set_tracks(tracks);
-    
+
     Ok(())
 }
 

@@ -1,12 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { AudioWaveformIcon, Music, Settings as SettingsIcon } from "lucide-react";
-import { useLocation, useNavigate } from 'react-router';
+import {
+  AudioWaveformIcon,
+  Music,
+  Settings as SettingsIcon,
+} from "lucide-react";
+import { useLocation, useNavigate } from "react-router";
 
 export function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   const currentPath = location.pathname;
   return (
     <div className="w-64 bg-sidebar border-r border-sidebar-border h-full flex flex-col">
@@ -19,7 +23,11 @@ export function Sidebar() {
 
       <div className="flex-1 p-4 space-y-2">
         <Button
-          variant={currentPath === "/" || currentPath === "/now-playing" ? "secondary" : "ghost"}
+          variant={
+            currentPath === "/" || currentPath === "/now-playing"
+              ? "secondary"
+              : "ghost"
+          }
           className="w-full justify-start gap-3"
           onClick={() => navigate("/")}
         >

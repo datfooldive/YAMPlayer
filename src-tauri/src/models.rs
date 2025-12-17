@@ -27,4 +27,3 @@ pub struct AudioState {
     pub paused_elapsed: Duration,
     pub total_duration: Option<Duration>,
 }
-

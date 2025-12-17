@@ -2,7 +2,13 @@ import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { FolderOpen, RefreshCw, Trash2, AlertCircle } from "lucide-react";
 
 interface IndexedFolder {
@@ -28,7 +34,9 @@ export function Settings({ onIndexed }: SettingsProps) {
 
   const loadFolders = async () => {
     try {
-      const indexedFolders = await invoke<IndexedFolder[]>("get_indexed_folders");
+      const indexedFolders = await invoke<IndexedFolder[]>(
+        "get_indexed_folders",
+      );
       setFolders(indexedFolders);
     } catch (error) {
       console.error("Failed to load folders:", error);
@@ -84,7 +92,11 @@ export function Settings({ onIndexed }: SettingsProps) {
   };
 
   const handleRemoveFolder = async (folderId: number, folderPath: string) => {
-    if (!confirm(`Are you sure you want to remove "${folderPath}" from indexed folders?`)) {
+    if (
+      !confirm(
+        `Are you sure you want to remove "${folderPath}" from indexed folders?`,
+      )
+    ) {
       return;
     }
     try {
@@ -111,7 +123,9 @@ export function Settings({ onIndexed }: SettingsProps) {
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">Settings</h1>
-          <p className="text-muted-foreground">Manage your music library indexing</p>
+          <p className="text-muted-foreground">
+            Manage your music library indexing
+          </p>
         </div>
 
         <Card>
@@ -136,7 +150,9 @@ export function Settings({ onIndexed }: SettingsProps) {
                   onClick={checkChanges}
                   disabled={isChecking}
                 >
-                  <RefreshCw className={`w-4 h-4 mr-2 ${isChecking ? "animate-spin" : ""}`} />
+                  <RefreshCw
+                    className={`w-4 h-4 mr-2 ${isChecking ? "animate-spin" : ""}`}
+                  />
                   Check Changes
                 </Button>
               </div>
@@ -147,7 +163,9 @@ export function Settings({ onIndexed }: SettingsProps) {
               <div className="text-center py-8 text-muted-foreground">
                 <FolderOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>No folders indexed yet</p>
-                <p className="text-sm mt-2">Click "Index New Folder" to get started</p>
+                <p className="text-sm mt-2">
+                  Click "Index New Folder" to get started
+                </p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -170,12 +188,16 @@ export function Settings({ onIndexed }: SettingsProps) {
                         disabled={isIndexing}
                         title="Reindex this folder"
                       >
-                        <RefreshCw className={`w-4 h-4 ${isIndexing ? "animate-spin" : ""}`} />
+                        <RefreshCw
+                          className={`w-4 h-4 ${isIndexing ? "animate-spin" : ""}`}
+                        />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleRemoveFolder(folder.id, folder.path)}
+                        onClick={() =>
+                          handleRemoveFolder(folder.id, folder.path)
+                        }
                         disabled={isIndexing}
                         title="Remove this folder"
                         className="text-destructive hover:text-destructive"
@@ -203,7 +225,9 @@ export function Settings({ onIndexed }: SettingsProps) {
               disabled={isIndexing}
               className="w-full"
             >
-              <FolderOpen className={`w-5 h-5 mr-2 ${isIndexing ? "animate-spin" : ""}`} />
+              <FolderOpen
+                className={`w-5 h-5 mr-2 ${isIndexing ? "animate-spin" : ""}`}
+              />
               {isIndexing ? "Indexing..." : "Index New Folder"}
             </Button>
           </CardContent>

@@ -71,52 +71,56 @@ export function MusicList({ onPlay, currentTrack }: MusicListProps) {
     );
   }
 
-   return (
+  return (
     <div className="space-y-1">
-        {tracks.map((track) => (
-          <div
-            key={track.path}
-            className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-              currentTrack === track.path
-                ? "bg-accent text-accent-foreground"
-                : "hover:bg-accent/50"
-            }`}
-            onClick={() => onPlay(track.path)}
-          >
-             <div className="shrink-0 w-12 h-12 flex items-center justify-center bg-muted rounded-md">
-              {track.thumbnail ? (
-                <img src={track.thumbnail} alt="album art" className="w-full h-full object-cover rounded-md" />
-              ) : (
-                <Music className="w-6 h-6 text-muted-foreground" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-medium truncate">
-                {track.artist && track.title
-                  ? `${track.artist} - ${track.title}`
-                  : track.title || track.name}
-              </div>
-              <div className="text-xs text-muted-foreground truncate">
-                {track.album || 'Unknown Album'}
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="shrink-0"
-              onClick={(e) => {
-                e.stopPropagation();
-                handlePlayToggle(track);
-              }}
-            >
-              {currentTrack === track.path && isPlaying ? (
-                <Pause className="w-4 h-4" />
-              ) : (
-                <Play className="w-4 h-4" />
-              )}
-            </Button>
+      {tracks.map((track) => (
+        <div
+          key={track.path}
+          className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+            currentTrack === track.path
+              ? "bg-accent text-accent-foreground"
+              : "hover:bg-accent/50"
+          }`}
+          onClick={() => onPlay(track.path)}
+        >
+          <div className="shrink-0 w-12 h-12 flex items-center justify-center bg-muted rounded-md">
+            {track.thumbnail ? (
+              <img
+                src={track.thumbnail}
+                alt="album art"
+                className="w-full h-full object-cover rounded-md"
+              />
+            ) : (
+              <Music className="w-6 h-6 text-muted-foreground" />
+            )}
           </div>
-        ))}
-      </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-medium truncate">
+              {track.artist && track.title
+                ? `${track.artist} - ${track.title}`
+                : track.title || track.name}
+            </div>
+            <div className="text-xs text-muted-foreground truncate">
+              {track.album || "Unknown Album"}
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePlayToggle(track);
+            }}
+          >
+            {currentTrack === track.path && isPlaying ? (
+              <Pause className="w-4 h-4" />
+            ) : (
+              <Play className="w-4 h-4" />
+            )}
+          </Button>
+        </div>
+      ))}
+    </div>
   );
 }

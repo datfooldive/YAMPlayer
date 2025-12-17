@@ -1,13 +1,13 @@
-import { NowPlayingView } from '@/components/NowPlayingView';
-import { useMusicStore } from '@/store/musicStore';
-import { useNavigate } from 'react-router';
+import { NowPlayingView } from "@/components/NowPlayingView";
+import { useMusicStore } from "@/store/musicStore";
+import { useNavigate } from "react-router";
 
 export function NowPlaying() {
   const { currentTrack, trackInfo, playMusic } = useMusicStore();
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate('/');
+    navigate("/");
   };
 
   const handlePlay = async (path: string) => {
@@ -15,11 +15,11 @@ export function NowPlaying() {
   };
 
   return (
-    <NowPlayingView 
-      currentTrack={currentTrack} 
+    <NowPlayingView
+      currentTrack={currentTrack}
       trackInfo={trackInfo}
-      onPlay={handlePlay} 
-      onBack={handleBack} 
+      onPlay={handlePlay}
+      onBack={handleBack}
     />
   );
 }

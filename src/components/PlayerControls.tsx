@@ -18,7 +18,11 @@ function formatTime(seconds: number): string {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
-export function PlayerControls({ currentTrack, trackInfo, loadCurrentTrack }: PlayerControlsProps) {
+export function PlayerControls({
+  currentTrack,
+  trackInfo,
+  loadCurrentTrack,
+}: PlayerControlsProps) {
   const { isPlaying, togglePlayback } = useMusicStore();
   const [volume, setVolume] = useState<number[]>([50]);
   const [currentTime, setCurrentTime] = useState<number>(0);
@@ -29,7 +33,7 @@ export function PlayerControls({ currentTrack, trackInfo, loadCurrentTrack }: Pl
     const loadVolume = async () => {
       try {
         const vol = await invoke<number>("get_volume");
-        setVolume([(vol * 100)]);
+        setVolume([vol * 100]);
       } catch (error) {
         console.error("Failed to load volume:", error);
       }
@@ -50,7 +54,9 @@ export function PlayerControls({ currentTrack, trackInfo, loadCurrentTrack }: Pl
     const updatePosition = async () => {
       if (isSeeking) return;
       try {
-        const [elapsed, total] = await invoke<[number, number | null]>("get_playback_position");
+        const [elapsed, total] = await invoke<[number, number | null]>(
+          "get_playback_position",
+        );
         setCurrentTime(elapsed);
         if (total !== null) {
           setTotalDuration(total);
@@ -116,15 +122,17 @@ export function PlayerControls({ currentTrack, trackInfo, loadCurrentTrack }: Pl
       ? `${trackInfo.artist} - ${trackInfo.title}`
       : trackInfo.title || trackInfo.name
     : currentTrack
-    ? currentTrack.split("/").pop() || "Unknown"
-    : "No track selected";
+      ? currentTrack.split("/").pop() || "Unknown"
+      : "No track selected";
 
   const displayAlbum = trackInfo?.album || null;
 
   return (
     <div className="bg-background border-t border-border flex flex-col items-center justify-center px-6 gap-2 py-4">
       <div className="w-full flex items-center gap-3 mb-2">
-        <span className="text-xs text-muted-foreground w-10 text-right">{formatTime(currentTime)}</span>
+        <span className="text-xs text-muted-foreground w-10 text-right">
+          {formatTime(currentTime)}
+        </span>
         <Slider
           value={[currentTime]}
           onValueChange={handleSeek}
@@ -135,7 +143,9 @@ export function PlayerControls({ currentTrack, trackInfo, loadCurrentTrack }: Pl
           disabled={!currentTrack}
           className="flex-1"
         />
-        <span className="text-xs text-muted-foreground w-10">{totalDuration !== null ? formatTime(totalDuration) : "0:00"}</span>
+        <span className="text-xs text-muted-foreground w-10">
+          {totalDuration !== null ? formatTime(totalDuration) : "0:00"}
+        </span>
       </div>
       <div className="w-full flex items-center">
         <div className="flex-1 min-w-0">

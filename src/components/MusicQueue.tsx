@@ -82,9 +82,13 @@ export function MusicQueue({ onPlay, currentTrack }: MusicQueueProps) {
           }`}
           onClick={() => onPlay(track.path)}
         >
-           <div className="shrink-0 w-12 h-12 flex items-center justify-center bg-muted rounded-md">
+          <div className="shrink-0 w-12 h-12 flex items-center justify-center bg-muted rounded-md">
             {track.thumbnail ? (
-              <img src={track.thumbnail} alt="album art" className="w-full h-full object-cover rounded-md" />
+              <img
+                src={track.thumbnail}
+                alt="album art"
+                className="w-full h-full object-cover rounded-md"
+              />
             ) : (
               <Music className="w-6 h-6 text-muted-foreground" />
             )}
@@ -96,7 +100,7 @@ export function MusicQueue({ onPlay, currentTrack }: MusicQueueProps) {
                 : track.title || track.name}
             </div>
             <div className="text-xs text-muted-foreground truncate">
-              {track.album || 'Unknown Album'}
+              {track.album || "Unknown Album"}
             </div>
           </div>
           <Button

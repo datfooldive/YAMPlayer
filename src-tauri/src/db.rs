@@ -38,17 +38,17 @@ pub fn init_db(app: &AppHandle) -> Result<Connection, String> {
         )",
         [],
     ).map_err(|e| format!("Failed to create tracks table: {}", e))?;
-    
+
     conn.execute(
         "ALTER TABLE tracks ADD COLUMN artist TEXT",
         [],
     ).ok();
-    
+
     conn.execute(
         "ALTER TABLE tracks ADD COLUMN album TEXT",
         [],
     ).ok();
-    
+
     conn.execute(
         "ALTER TABLE tracks ADD COLUMN title TEXT",
         [],
@@ -158,7 +158,7 @@ pub fn get_indexed_folders(conn: &Connection) -> Result<Vec<IndexedFolder>, Stri
 pub fn get_folder_paths(conn: &Connection) -> Result<Vec<String>, String> {
     let mut stmt = conn.prepare("SELECT path FROM indexed_folders")
         .map_err(|e| format!("Failed to prepare statement: {}", e))?;
-    
+
     let folders: Vec<String> = stmt.query_map([], |row| {
         row.get::<_, String>(0)
     })
@@ -192,7 +192,7 @@ pub fn get_track_count(conn: &Connection, folder_id: i64) -> Result<i64, String>
 pub fn get_track_paths(conn: &Connection, folder_id: i64) -> Result<Vec<String>, String> {
     let mut stmt = conn.prepare("SELECT path FROM tracks WHERE folder_id = ?1")
         .map_err(|e| format!("Failed to prepare statement: {}", e))?;
-    
+
     let paths: Vec<String> = stmt.query_map(params![folder_id], |row| {
         row.get::<_, String>(0)
     })
@@ -211,4 +211,3 @@ pub fn remove_folder(conn: &Connection, folder_id: i64) -> Result<(), String> {
 
     Ok(())
 }
-

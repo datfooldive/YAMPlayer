@@ -1,19 +1,19 @@
-import { useEffect } from 'react';
-import { Outlet } from 'react-router';
-import { Sidebar } from '@/components/Sidebar';
-import { PlayerControls } from '@/components/PlayerControls';
-import { useMusicStore } from '@/store/musicStore';
-import { useLocation } from 'react-router';
+import { useEffect } from "react";
+import { Outlet } from "react-router";
+import { Sidebar } from "@/components/Sidebar";
+import { PlayerControls } from "@/components/PlayerControls";
+import { useMusicStore } from "@/store/musicStore";
+import { useLocation } from "react-router";
 
 function App() {
   const location = useLocation();
   const { currentTrack, trackInfo, loadCurrentTrack } = useMusicStore();
-  
+
   useEffect(() => {
     loadCurrentTrack();
   }, []);
 
-  const isSettingsRoute = location.pathname === '/settings';
+  const isSettingsRoute = location.pathname === "/settings";
 
   return (
     <div className="h-screen w-screen flex flex-col bg-background dark">
@@ -24,10 +24,10 @@ function App() {
             <Outlet />
           </div>
           {!isSettingsRoute && (
-            <PlayerControls 
-              currentTrack={currentTrack} 
-              trackInfo={trackInfo} 
-              loadCurrentTrack={loadCurrentTrack} 
+            <PlayerControls
+              currentTrack={currentTrack}
+              trackInfo={trackInfo}
+              loadCurrentTrack={loadCurrentTrack}
             />
           )}
         </div>

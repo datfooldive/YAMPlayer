@@ -19,7 +19,12 @@ interface NowPlayingViewProps {
   onBack: () => void;
 }
 
-export function NowPlayingView({ currentTrack, trackInfo, onPlay, onBack }: NowPlayingViewProps) {
+export function NowPlayingView({
+  currentTrack,
+  trackInfo,
+  onPlay,
+  onBack,
+}: NowPlayingViewProps) {
   return (
     <div className="h-full flex flex-col">
       <div className="px-2 py-4 flex justify-between items-center">
@@ -33,7 +38,7 @@ export function NowPlayingView({ currentTrack, trackInfo, onPlay, onBack }: NowP
             {trackInfo && trackInfo.thumbnail ? (
               <img
                 src={trackInfo.thumbnail}
-                alt={trackInfo.album || trackInfo.title || 'album art'}
+                alt={trackInfo.album || trackInfo.title || "album art"}
                 className="w-full h-full object-cover rounded-lg"
               />
             ) : (

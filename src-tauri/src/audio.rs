@@ -119,7 +119,7 @@ pub fn seek(position_secs: f64) -> Result<(), String> {
         } else {
             audio_state.playback_start = None;
         }
-        
+
         audio_state.sink = Some(sink);
         audio_state.paused_elapsed = seek_duration;
         audio_state.total_duration = total_duration;
