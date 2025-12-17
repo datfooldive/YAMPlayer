@@ -82,6 +82,52 @@ pub fn play_music(path: String) -> Result<(), String> {
     Ok(())
 }
 
+pub fn seek(position_secs: f64) -> Result<(), String> {
+    let state = get_audio_state();
+    let mut audio_state = state.lock().unwrap();
+
+    if let Some(path) = audio_state.current_track.clone() {
+        let was_playing = audio_state.sink.as_ref().map_or(false, |s| !s.is_paused());
+
+        if let Some(sink) = audio_state.sink.take() {
+            sink.stop();
+        }
+
+        let stream_handle = get_stream_handle()?;
+        let file = File::open(&path)
+            .map_err(|e| format!("Failed to open file: {}", e))?;
+        let mut source = Decoder::new(BufReader::new(file))
+            .map_err(|e| format!("Failed to decode audio: {}", e))?;
+
+        let seek_duration = Duration::from_secs_f64(position_secs);
+        if source.try_seek(seek_duration).is_err() {
+            // if seek fails, we effectively restart the track.
+        }
+
+        let total_duration = source.total_duration();
+        let volume = audio_state.volume;
+
+        let sink = Sink::try_new(stream_handle)
+            .map_err(|e| format!("Failed to create sink: {}", e))?;
+
+        sink.set_volume(volume);
+        sink.append(source);
+
+        if was_playing {
+            sink.play();
+            audio_state.playback_start = Some(Instant::now());
+        } else {
+            audio_state.playback_start = None;
+        }
+        
+        audio_state.sink = Some(sink);
+        audio_state.paused_elapsed = seek_duration;
+        audio_state.total_duration = total_duration;
+    }
+
+    Ok(())
+}
+
 pub fn pause_music() -> Result<(), String> {
     let state = get_audio_state();
     let mut audio_state = state.lock().unwrap();

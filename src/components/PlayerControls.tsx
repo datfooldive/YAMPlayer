@@ -28,6 +28,7 @@ export function PlayerControls({ currentTrack }: PlayerControlsProps) {
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [totalDuration, setTotalDuration] = useState<number | null>(null);
   const [trackInfo, setTrackInfo] = useState<TrackInfo | null>(null);
+  const [isSeeking, setIsSeeking] = useState(false);
 
   useEffect(() => {
     const loadVolume = async () => {
@@ -68,6 +69,7 @@ export function PlayerControls({ currentTrack }: PlayerControlsProps) {
     };
 
     const updatePosition = async () => {
+      if (isSeeking) return;
       try {
         const [elapsed, total] = await invoke<[number, number | null]>("get_playback_position");
         setCurrentTime(elapsed);
@@ -84,7 +86,7 @@ export function PlayerControls({ currentTrack }: PlayerControlsProps) {
       updatePosition();
     }, 500);
     return () => clearInterval(interval);
-  }, [currentTrack]);
+  }, [currentTrack, isSeeking]);
 
   const handlePlayPause = async () => {
     try {
@@ -108,6 +110,15 @@ export function PlayerControls({ currentTrack }: PlayerControlsProps) {
     }
   };
 
+  const handleSeek = (value: number[]) => {
+    setCurrentTime(value[0]);
+  };
+
+  const handleSeekCommit = (value: number[]) => {
+    setIsSeeking(false);
+    invoke("seek", { positionSecs: value[0] }).catch(console.error);
+  };
+
   const handleSkipBack = () => {
   };
 
@@ -125,57 +136,71 @@ export function PlayerControls({ currentTrack }: PlayerControlsProps) {
   const displayAlbum = trackInfo?.album || null;
 
   return (
-    <div className="h-24 bg-background border-t border-border flex items-center px-6 gap-6">
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium truncate">{displayName}</div>
-        <div className="text-xs text-muted-foreground">
-          {displayAlbum && <span className="truncate">{displayAlbum}</span>}
-          {displayAlbum && " • "}
-          {formatTime(currentTime)} {totalDuration !== null && ` / ${formatTime(totalDuration)}`}
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleSkipBack}
-          disabled={!currentTrack}
-        >
-          <SkipBack className="w-5 h-5" />
-        </Button>
-        <Button
-          variant="default"
-          size="icon"
-          onClick={handlePlayPause}
-          disabled={!currentTrack}
-          className="w-12 h-12 rounded-full"
-        >
-          {isPlaying ? (
-            <Pause className="w-5 h-5" />
-          ) : (
-            <Play className="w-5 h-5 ml-0.5" />
-          )}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleSkipForward}
-          disabled={!currentTrack}
-        >
-          <SkipForward className="w-5 h-5" />
-        </Button>
-      </div>
-
-      <div className="flex items-center gap-3 w-32">
-        <Volume2 className="w-4 h-4 text-muted-foreground" />
+    <div className="h-24 bg-background border-t border-border flex flex-col items-center justify-center px-6 gap-2 pt-2">
+      <div className="w-full flex items-center gap-3">
+        <span className="text-xs text-muted-foreground w-10 text-right">{formatTime(currentTime)}</span>
         <Slider
-          value={volume}
-          onValueChange={handleVolumeChange}
-          max={100}
+          value={[currentTime]}
+          onValueChange={handleSeek}
+          onValueCommit={handleSeekCommit}
+          onPointerDown={() => setIsSeeking(true)}
+          max={totalDuration ?? 0}
           step={1}
+          disabled={!currentTrack}
           className="flex-1"
         />
+        <span className="text-xs text-muted-foreground w-10">{totalDuration !== null ? formatTime(totalDuration) : "0:00"}</span>
+      </div>
+      <div className="w-full flex items-center">
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium truncate">{displayName}</div>
+          <div className="text-xs text-muted-foreground">
+            {displayAlbum && <span className="truncate">{displayAlbum}</span>}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleSkipBack}
+            disabled={!currentTrack}
+          >
+            <SkipBack className="w-5 h-5" />
+          </Button>
+          <Button
+            variant="default"
+            size="icon"
+            onClick={handlePlayPause}
+            disabled={!currentTrack}
+            className="w-12 h-12 rounded-full"
+          >
+            {isPlaying ? (
+              <Pause className="w-5 h-5" />
+            ) : (
+              <Play className="w-5 h-5 ml-0.5" />
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleSkipForward}
+            disabled={!currentTrack}
+          >
+            <SkipForward className="w-5 h-5" />
+          </Button>
+        </div>
+
+        <div className="flex-1 flex justify-end items-center gap-3 w-32">
+          <Volume2 className="w-4 h-4 text-muted-foreground" />
+          <Slider
+            value={volume}
+            onValueChange={handleVolumeChange}
+            max={100}
+            step={1}
+            className="w-24"
+          />
+        </div>
       </div>
     </div>
   );
