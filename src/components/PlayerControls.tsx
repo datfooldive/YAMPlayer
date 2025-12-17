@@ -3,6 +3,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Play, Pause, SkipBack, SkipForward, Volume2 } from "lucide-react";
+import { useMusicStore } from "@/store/musicStore";
+import type { TrackInfo } from "@/store/musicStore";
 
 interface PlayerControlsProps {
   currentTrack: string | null;
@@ -16,17 +18,8 @@ function formatTime(seconds: number): string {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
-interface TrackInfo {
-  path: string;
-  name: string;
-  artist: string | null;
-  album: string | null;
-  title: string | null;
-  thumbnail: string | null;
-}
-
 export function PlayerControls({ currentTrack, trackInfo, loadCurrentTrack }: PlayerControlsProps) {
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const { isPlaying, togglePlayback } = useMusicStore();
   const [volume, setVolume] = useState<number[]>([50]);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [totalDuration, setTotalDuration] = useState<number | null>(null);
@@ -47,8 +40,8 @@ export function PlayerControls({ currentTrack, trackInfo, loadCurrentTrack }: Pl
   useEffect(() => {
     const checkPlaying = async () => {
       try {
-        const playing = await invoke<boolean>("is_playing");
-        setIsPlaying(playing);
+        await invoke<boolean>("is_playing");
+        // isPlaying is managed by Zustand store
       } catch (error) {
         console.error("Failed to check playing state:", error);
       }
@@ -70,19 +63,13 @@ export function PlayerControls({ currentTrack, trackInfo, loadCurrentTrack }: Pl
     const interval = setInterval(() => {
       checkPlaying();
       updatePosition();
-      loadCurrentTrack();
     }, 500);
     return () => clearInterval(interval);
-  }, [currentTrack, isSeeking, loadCurrentTrack]);
+  }, [currentTrack, isSeeking]);
 
   const handlePlayPause = async () => {
     try {
-      if (isPlaying) {
-        await invoke("pause_music");
-      } else {
-        await invoke("resume_music");
-      }
-      setIsPlaying(!isPlaying);
+      await togglePlayback();
     } catch (error) {
       console.error("Failed to toggle playback:", error);
     }
@@ -135,8 +122,8 @@ export function PlayerControls({ currentTrack, trackInfo, loadCurrentTrack }: Pl
   const displayAlbum = trackInfo?.album || null;
 
   return (
-    <div className="h-24 bg-background border-t border-border flex flex-col items-center justify-center px-6 gap-2 pt-2">
-      <div className="w-full flex items-center gap-3">
+    <div className="bg-background border-t border-border flex flex-col items-center justify-center px-6 gap-2 py-4">
+      <div className="w-full flex items-center gap-3 mb-2">
         <span className="text-xs text-muted-foreground w-10 text-right">{formatTime(currentTime)}</span>
         <Slider
           value={[currentTime]}
@@ -172,7 +159,7 @@ export function PlayerControls({ currentTrack, trackInfo, loadCurrentTrack }: Pl
             size="icon"
             onClick={handlePlayPause}
             disabled={!currentTrack}
-            className="w-12 h-12 rounded-full"
+            className="w-10 h-10 rounded-full"
           >
             {isPlaying ? (
               <Pause className="w-5 h-5" />

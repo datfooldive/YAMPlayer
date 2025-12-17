@@ -1,5 +1,6 @@
-import { MusicList } from "@/components/MusicList";
+import { MusicQueue } from "@/components/MusicQueue";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronLeft } from "lucide-react";
 
 interface TrackInfo {
@@ -21,14 +22,14 @@ interface NowPlayingViewProps {
 export function NowPlayingView({ currentTrack, trackInfo, onPlay, onBack }: NowPlayingViewProps) {
   return (
     <div className="h-full flex flex-col">
-      <div className="p-2">
-        <Button variant="ghost" onClick={onBack}>
-          <ChevronLeft className="mr-2 h-4 w-4" /> Back to Library
+      <div className="px-2 py-4 flex justify-between items-center">
+        <Button variant="link" onClick={onBack}>
+          <ChevronLeft /> Back to Library
         </Button>
       </div>
-      <div className="flex-1 flex p-6 gap-6 overflow-hidden">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="aspect-square w-full max-w-lg">
+      <div className="flex-1 flex px-6 gap-6 overflow-hidden">
+        <div className="flex-shrink-0">
+          <div className="aspect-square w-80">
             {trackInfo && trackInfo.thumbnail ? (
               <img
                 src={trackInfo.thumbnail}
@@ -42,10 +43,14 @@ export function NowPlayingView({ currentTrack, trackInfo, onPlay, onBack }: NowP
             )}
           </div>
         </div>
-        <div className="flex flex-col">
-          <h2 className="text-2xl font-bold mb-4 -shrink-0">Up Next</h2>
-          <div className="overflow-y-auto">
-            <MusicList onPlay={onPlay} currentTrack={currentTrack} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <h2 className="text-2xl font-bold mb-4 shrink-0">Up Next</h2>
+          <div className="flex-1 overflow-hidden">
+            <ScrollArea className="h-full w-full">
+              <div className="pr-6">
+                <MusicQueue onPlay={onPlay} currentTrack={currentTrack} />
+              </div>
+            </ScrollArea>
           </div>
         </div>
       </div>

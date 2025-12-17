@@ -2305,25 +2305,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "music-player"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "chrono",
- "lofty",
- "once_cell",
- "rodio",
- "rusqlite",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-opener",
- "walkdir",
-]
-
-[[package]]
 name = "ndk"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5688,6 +5669,25 @@ dependencies = [
  "libc",
  "once_cell",
  "pkg-config",
+]
+
+[[package]]
+name = "yamplayer"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "chrono",
+ "lofty",
+ "once_cell",
+ "rodio",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-opener",
+ "walkdir",
 ]
 
 [[package]]
