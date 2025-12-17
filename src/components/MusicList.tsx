@@ -10,6 +10,7 @@ interface MusicFile {
   artist: string | null;
   album: string | null;
   title: string | null;
+  thumbnail: string | null;
 }
 
 interface MusicListProps {
@@ -100,11 +101,11 @@ export function MusicList({ onPlay, currentTrack }: MusicListProps) {
             }`}
             onClick={() => onPlay(track.path)}
           >
-            <div className="shrink-0 w-8 h-8 flex items-center justify-center">
-              {currentTrack === track.path ? (
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+             <div className="shrink-0 w-12 h-12 flex items-center justify-center bg-muted rounded-md">
+              {track.thumbnail ? (
+                <img src={track.thumbnail} alt="album art" className="w-full h-full object-cover rounded-md" />
               ) : (
-                <span className="text-xs text-muted-foreground">{index + 1}</span>
+                <Music className="w-6 h-6 text-muted-foreground" />
               )}
             </div>
             <div className="flex-1 min-w-0">
@@ -114,7 +115,7 @@ export function MusicList({ onPlay, currentTrack }: MusicListProps) {
                   : track.title || track.name}
               </div>
               <div className="text-xs text-muted-foreground truncate">
-                {track.album || track.path}
+                {track.album || 'Unknown Album'}
               </div>
             </div>
             <Button

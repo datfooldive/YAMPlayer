@@ -8,6 +8,7 @@ pub struct MusicFile {
     pub artist: Option<String>,
     pub album: Option<String>,
     pub title: Option<String>,
+    pub thumbnail: Option<String>,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]

@@ -33,6 +33,7 @@ pub fn init_db(app: &AppHandle) -> Result<Connection, String> {
             artist TEXT,
             album TEXT,
             title TEXT,
+            thumbnail TEXT,
             FOREIGN KEY (folder_id) REFERENCES indexed_folders(id) ON DELETE CASCADE
         )",
         [],
@@ -50,6 +51,11 @@ pub fn init_db(app: &AppHandle) -> Result<Connection, String> {
     
     conn.execute(
         "ALTER TABLE tracks ADD COLUMN title TEXT",
+        [],
+    ).ok();
+
+    conn.execute(
+        "ALTER TABLE tracks ADD COLUMN thumbnail TEXT",
         [],
     ).ok();
 
@@ -89,7 +95,7 @@ pub fn save_tracks(conn: &Connection, folder_id: i64, tracks: &[MusicFile]) -> R
     ).map_err(|e| format!("Failed to delete old tracks: {}", e))?;
 
     let mut stmt = conn.prepare(
-        "INSERT INTO tracks (folder_id, path, name, artist, album, title) VALUES (?1, ?2, ?3, ?4, ?5, ?6)"
+        "INSERT INTO tracks (folder_id, path, name, artist, album, title, thumbnail) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)"
     ).map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
     for track in tracks {
@@ -99,7 +105,8 @@ pub fn save_tracks(conn: &Connection, folder_id: i64, tracks: &[MusicFile]) -> R
             track.name,
             track.artist,
             track.album,
-            track.title
+            track.title,
+            track.thumbnail,
         ])
             .map_err(|e| format!("Failed to insert track: {}", e))?;
     }
@@ -109,7 +116,7 @@ pub fn save_tracks(conn: &Connection, folder_id: i64, tracks: &[MusicFile]) -> R
 
 pub fn load_tracks(conn: &Connection) -> Result<Vec<MusicFile>, String> {
     let mut stmt = conn.prepare(
-        "SELECT path, name, artist, album, title FROM tracks ORDER BY COALESCE(artist, ''), COALESCE(album, ''), COALESCE(title, name)"
+        "SELECT path, name, artist, album, title, thumbnail FROM tracks ORDER BY COALESCE(artist, ''), COALESCE(album, ''), COALESCE(title, name)"
     ).map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
     let tracks: Vec<MusicFile> = stmt.query_map([], |row| {
@@ -119,6 +126,7 @@ pub fn load_tracks(conn: &Connection) -> Result<Vec<MusicFile>, String> {
             artist: row.get(2)?,
             album: row.get(3)?,
             title: row.get(4)?,
+            thumbnail: row.get(5)?,
         })
     })
     .map_err(|e| format!("Failed to query tracks: {}", e))?
