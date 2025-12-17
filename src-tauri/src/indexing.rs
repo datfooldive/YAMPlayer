@@ -1,9 +1,31 @@
 use std::collections::HashSet;
 use walkdir::WalkDir;
+use lofty::read_from_path;
+use lofty::file::TaggedFileExt;
+use lofty::tag::Accessor;
 use crate::models::MusicFile;
 use crate::db;
 
 const SUPPORTED_EXTENSIONS: &[&str] = &["mp3", "wav", "flac", "ogg"];
+
+fn extract_metadata(file_path: &str) -> (Option<String>, Option<String>, Option<String>) {
+    match read_from_path(file_path) {
+        Ok(tagged_file) => {
+            let tag = tagged_file.primary_tag();
+            let tag = tag.or_else(|| tagged_file.first_tag());
+            
+            if let Some(tag) = tag {
+                let artist = tag.artist().map(|s| s.to_string());
+                let album = tag.album().map(|s| s.to_string());
+                let title = tag.title().map(|s| s.to_string());
+                (artist, album, title)
+            } else {
+                (None, None, None)
+            }
+        }
+        Err(_) => (None, None, None),
+    }
+}
 
 pub fn scan_folder(path: &str) -> Vec<MusicFile> {
     let mut music_files = Vec::new();
@@ -15,9 +37,13 @@ pub fn scan_folder(path: &str) -> Vec<MusicFile> {
                     if SUPPORTED_EXTENSIONS.contains(&ext_str.to_lowercase().as_str()) {
                         let file_path = entry.path().to_string_lossy().to_string();
                         let file_name = entry.file_name().to_string_lossy().to_string();
+                        let (artist, album, title) = extract_metadata(&file_path);
                         music_files.push(MusicFile {
                             path: file_path,
                             name: file_name,
+                            artist,
+                            album,
+                            title,
                         });
                     }
                 }

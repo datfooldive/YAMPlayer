@@ -30,10 +30,28 @@ pub fn init_db(app: &AppHandle) -> Result<Connection, String> {
             folder_id INTEGER NOT NULL,
             path TEXT UNIQUE NOT NULL,
             name TEXT NOT NULL,
+            artist TEXT,
+            album TEXT,
+            title TEXT,
             FOREIGN KEY (folder_id) REFERENCES indexed_folders(id) ON DELETE CASCADE
         )",
         [],
     ).map_err(|e| format!("Failed to create tracks table: {}", e))?;
+    
+    conn.execute(
+        "ALTER TABLE tracks ADD COLUMN artist TEXT",
+        [],
+    ).ok();
+    
+    conn.execute(
+        "ALTER TABLE tracks ADD COLUMN album TEXT",
+        [],
+    ).ok();
+    
+    conn.execute(
+        "ALTER TABLE tracks ADD COLUMN title TEXT",
+        [],
+    ).ok();
 
     conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_tracks_folder ON tracks(folder_id)",
@@ -71,11 +89,18 @@ pub fn save_tracks(conn: &Connection, folder_id: i64, tracks: &[MusicFile]) -> R
     ).map_err(|e| format!("Failed to delete old tracks: {}", e))?;
 
     let mut stmt = conn.prepare(
-        "INSERT INTO tracks (folder_id, path, name) VALUES (?1, ?2, ?3)"
+        "INSERT INTO tracks (folder_id, path, name, artist, album, title) VALUES (?1, ?2, ?3, ?4, ?5, ?6)"
     ).map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
     for track in tracks {
-        stmt.execute(params![folder_id, track.path, track.name])
+        stmt.execute(params![
+            folder_id,
+            track.path,
+            track.name,
+            track.artist,
+            track.album,
+            track.title
+        ])
             .map_err(|e| format!("Failed to insert track: {}", e))?;
     }
 
@@ -84,13 +109,16 @@ pub fn save_tracks(conn: &Connection, folder_id: i64, tracks: &[MusicFile]) -> R
 
 pub fn load_tracks(conn: &Connection) -> Result<Vec<MusicFile>, String> {
     let mut stmt = conn.prepare(
-        "SELECT path, name FROM tracks ORDER BY name"
+        "SELECT path, name, artist, album, title FROM tracks ORDER BY COALESCE(artist, ''), COALESCE(album, ''), COALESCE(title, name)"
     ).map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
     let tracks: Vec<MusicFile> = stmt.query_map([], |row| {
         Ok(MusicFile {
             path: row.get(0)?,
             name: row.get(1)?,
+            artist: row.get(2)?,
+            album: row.get(3)?,
+            title: row.get(4)?,
         })
     })
     .map_err(|e| format!("Failed to query tracks: {}", e))?

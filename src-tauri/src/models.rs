@@ -5,6 +5,9 @@ use std::time::{Duration, Instant};
 pub struct MusicFile {
     pub path: String,
     pub name: String,
+    pub artist: Option<String>,
+    pub album: Option<String>,
+    pub title: Option<String>,
 }
 
 #[derive(Clone, serde::Serialize, serde::Deserialize)]

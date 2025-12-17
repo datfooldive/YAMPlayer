@@ -52,7 +52,7 @@ pub fn play_music(path: String) -> Result<(), String> {
     let state = get_audio_state();
     let mut audio_state = state.lock().unwrap();
 
-    if let Some(sink) = &audio_state.sink {
+    if let Some(sink) = audio_state.sink.take() {
         sink.stop();
     }
 
@@ -60,7 +60,6 @@ pub fn play_music(path: String) -> Result<(), String> {
 
     let file = File::open(&path)
         .map_err(|e| format!("Failed to open file: {}", e))?;
-
     let source = Decoder::new(BufReader::new(file))
         .map_err(|e| format!("Failed to decode audio: {}", e))?;
 
@@ -70,13 +69,8 @@ pub fn play_music(path: String) -> Result<(), String> {
     let sink = Sink::try_new(stream_handle)
         .map_err(|e| format!("Failed to create sink: {}", e))?;
 
-    let file2 = File::open(&path)
-        .map_err(|e| format!("Failed to open file: {}", e))?;
-    let source2 = Decoder::new(BufReader::new(file2))
-        .map_err(|e| format!("Failed to decode audio: {}", e))?;
-
     sink.set_volume(volume);
-    sink.append(source2);
+    sink.append(source);
     sink.play();
 
     audio_state.sink = Some(sink);
@@ -105,8 +99,15 @@ pub fn resume_music() -> Result<(), String> {
     let state = get_audio_state();
     let mut audio_state = state.lock().unwrap();
     if let Some(sink) = &audio_state.sink {
-        sink.play();
-        audio_state.playback_start = Some(Instant::now());
+        if sink.empty() {
+            if let Some(path) = audio_state.current_track.clone() {
+                drop(audio_state);
+                return play_music(path);
+            }
+        } else {
+            sink.play();
+            audio_state.playback_start = Some(Instant::now());
+        }
     }
     Ok(())
 }
@@ -126,6 +127,19 @@ pub fn get_current_track() -> Result<Option<String>, String> {
     let state = get_audio_state();
     let audio_state = state.lock().unwrap();
     Ok(audio_state.current_track.clone())
+}
+
+pub fn get_current_track_info() -> Result<Option<MusicFile>, String> {
+    let state = get_audio_state();
+    let audio_state = state.lock().unwrap();
+
+    if let Some(current_path) = &audio_state.current_track {
+        if let Some(track) = audio_state.tracks.iter().find(|t| &t.path == current_path) {
+            return Ok(Some(track.clone()));
+        }
+    }
+
+    Ok(None)
 }
 
 pub fn is_playing() -> Result<bool, String> {
@@ -163,7 +177,7 @@ pub fn get_volume() -> Result<f32, String> {
 pub fn get_playback_position() -> Result<(f64, Option<f64>), String> {
     let state = get_audio_state();
     let audio_state = state.lock().unwrap();
-    
+
     let mut elapsed = audio_state.paused_elapsed.as_secs_f64();
     if let Some(start) = audio_state.playback_start {
         elapsed += start.elapsed().as_secs_f64();
@@ -173,4 +187,3 @@ pub fn get_playback_position() -> Result<(f64, Option<f64>), String> {
 
     Ok((elapsed, total))
 }
-

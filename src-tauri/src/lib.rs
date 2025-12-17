@@ -81,6 +81,11 @@ fn get_current_track() -> Result<Option<String>, String> {
 }
 
 #[tauri::command]
+fn get_current_track_info() -> Result<Option<MusicFile>, String> {
+    audio::get_current_track_info()
+}
+
+#[tauri::command]
 fn is_playing() -> Result<bool, String> {
     audio::is_playing()
 }
@@ -117,6 +122,7 @@ pub fn run() {
             resume_music,
             stop_music,
             get_current_track,
+            get_current_track_info,
             is_playing,
             set_volume,
             get_volume,

@@ -14,11 +14,20 @@ function formatTime(seconds: number): string {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
+interface TrackInfo {
+  path: string;
+  name: string;
+  artist: string | null;
+  album: string | null;
+  title: string | null;
+}
+
 export function PlayerControls({ currentTrack }: PlayerControlsProps) {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [volume, setVolume] = useState<number[]>([50]);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [totalDuration, setTotalDuration] = useState<number | null>(null);
+  const [trackInfo, setTrackInfo] = useState<TrackInfo | null>(null);
 
   useEffect(() => {
     const loadVolume = async () => {
@@ -31,6 +40,22 @@ export function PlayerControls({ currentTrack }: PlayerControlsProps) {
     };
     loadVolume();
   }, []);
+
+  useEffect(() => {
+    const loadTrackInfo = async () => {
+      if (currentTrack) {
+        try {
+          const info = await invoke<TrackInfo | null>("get_current_track_info");
+          setTrackInfo(info);
+        } catch (error) {
+          console.error("Failed to load track info:", error);
+        }
+      } else {
+        setTrackInfo(null);
+      }
+    };
+    loadTrackInfo();
+  }, [currentTrack]);
 
   useEffect(() => {
     const checkPlaying = async () => {
@@ -89,13 +114,23 @@ export function PlayerControls({ currentTrack }: PlayerControlsProps) {
   const handleSkipForward = () => {
   };
 
-  const trackName = currentTrack ? currentTrack.split("/").pop() || "Unknown" : "No track selected";
+  const displayName = trackInfo
+    ? trackInfo.artist && trackInfo.title
+      ? `${trackInfo.artist} - ${trackInfo.title}`
+      : trackInfo.title || trackInfo.name
+    : currentTrack
+    ? currentTrack.split("/").pop() || "Unknown"
+    : "No track selected";
+
+  const displayAlbum = trackInfo?.album || null;
 
   return (
     <div className="h-24 bg-background border-t border-border flex items-center px-6 gap-6">
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium truncate">{trackName}</div>
+        <div className="text-sm font-medium truncate">{displayName}</div>
         <div className="text-xs text-muted-foreground">
+          {displayAlbum && <span className="truncate">{displayAlbum}</span>}
+          {displayAlbum && " • "}
           {formatTime(currentTime)} {totalDuration !== null && ` / ${formatTime(totalDuration)}`}
         </div>
       </div>

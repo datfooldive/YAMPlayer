@@ -7,6 +7,9 @@ import { Play, Pause, Music } from "lucide-react";
 interface MusicFile {
   path: string;
   name: string;
+  artist: string | null;
+  album: string | null;
+  title: string | null;
 }
 
 interface MusicListProps {
@@ -16,8 +19,8 @@ interface MusicListProps {
 
 export function MusicList({ onPlay, currentTrack }: MusicListProps) {
   const [tracks, setTracks] = useState<MusicFile[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
   useEffect(() => {
     loadMusic();
@@ -105,8 +108,14 @@ export function MusicList({ onPlay, currentTrack }: MusicListProps) {
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-medium truncate">{track.name}</div>
-              <div className="text-xs text-muted-foreground truncate">{track.path}</div>
+              <div className="font-medium truncate">
+                {track.artist && track.title
+                  ? `${track.artist} - ${track.title}`
+                  : track.title || track.name}
+              </div>
+              <div className="text-xs text-muted-foreground truncate">
+                {track.album || track.path}
+              </div>
             </div>
             <Button
               variant="ghost"
