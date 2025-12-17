@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Home, Music, Settings as SettingsIcon } from "lucide-react";
+import { Music, Settings as SettingsIcon } from "lucide-react";
 
 type View = "library" | "settings";
 
@@ -39,4 +39,3 @@ export function Sidebar({ currentView, onViewChange }: SidebarProps) {
     </div>
   );
 }
-

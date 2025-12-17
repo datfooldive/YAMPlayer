@@ -3,8 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { FolderOpen, RefreshCw, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
+import { FolderOpen, RefreshCw, Trash2, AlertCircle } from "lucide-react";
 
 interface IndexedFolder {
   id: number;
@@ -18,9 +17,9 @@ interface SettingsProps {
 
 export function Settings({ onIndexed }: SettingsProps) {
   const [folders, setFolders] = useState<IndexedFolder[]>([]);
-  const [hasChanges, setHasChanges] = useState(false);
-  const [isIndexing, setIsIndexing] = useState(false);
-  const [isChecking, setIsChecking] = useState(false);
+  const [hasChanges, setHasChanges] = useState<boolean>(false);
+  const [isIndexing, setIsIndexing] = useState<boolean>(false);
+  const [isChecking, setIsChecking] = useState<boolean>(false);
 
   useEffect(() => {
     loadFolders();
@@ -213,4 +212,3 @@ export function Settings({ onIndexed }: SettingsProps) {
     </div>
   );
 }
-

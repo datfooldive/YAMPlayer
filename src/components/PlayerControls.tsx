@@ -15,16 +15,16 @@ function formatTime(seconds: number): string {
 }
 
 export function PlayerControls({ currentTrack }: PlayerControlsProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState([50]);
-  const [currentTime, setCurrentTime] = useState(0);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [volume, setVolume] = useState<number[]>([50]);
+  const [currentTime, setCurrentTime] = useState<number>(0);
   const [totalDuration, setTotalDuration] = useState<number | null>(null);
 
   useEffect(() => {
     const loadVolume = async () => {
       try {
         const vol = await invoke<number>("get_volume");
-        setVolume([(vol * 100) as number]);
+        setVolume([(vol * 100)]);
       } catch (error) {
         console.error("Failed to load volume:", error);
       }
@@ -145,4 +145,3 @@ export function PlayerControls({ currentTrack }: PlayerControlsProps) {
     </div>
   );
 }
-

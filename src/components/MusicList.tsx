@@ -10,7 +10,7 @@ interface MusicFile {
 }
 
 interface MusicListProps {
-  onPlay: (path: string) => void;
+  onPlay: (path: string) => Promise<void>;
   currentTrack: string | null;
 }
 
@@ -97,7 +97,7 @@ export function MusicList({ onPlay, currentTrack }: MusicListProps) {
             }`}
             onClick={() => onPlay(track.path)}
           >
-            <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
+            <div className="shrink-0 w-8 h-8 flex items-center justify-center">
               {currentTrack === track.path ? (
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
               ) : (
@@ -111,7 +111,7 @@ export function MusicList({ onPlay, currentTrack }: MusicListProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="flex-shrink-0"
+              className="shrink-0"
               onClick={(e) => {
                 e.stopPropagation();
                 handlePlayToggle(track);
@@ -129,4 +129,3 @@ export function MusicList({ onPlay, currentTrack }: MusicListProps) {
     </ScrollArea>
   );
 }
-
