@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Play, Music } from "lucide-react";
+import { Play, Pause, Music } from "lucide-react";
 
 interface MusicFile {
   path: string;
@@ -17,9 +17,12 @@ interface MusicListProps {
 export function MusicList({ onPlay, currentTrack }: MusicListProps) {
   const [tracks, setTracks] = useState<MusicFile[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     loadMusic();
+    const interval = setInterval(checkPlaying, 500);
+    return () => clearInterval(interval);
   }, []);
 
   const loadMusic = async () => {
@@ -31,6 +34,35 @@ export function MusicList({ onPlay, currentTrack }: MusicListProps) {
       console.error("Failed to load music:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkPlaying = async () => {
+    try {
+      const playing = await invoke<boolean>("is_playing");
+      setIsPlaying(playing);
+    } catch (error) {
+      console.error("Failed to check playing state:", error);
+    }
+  };
+
+  const handlePlayToggle = async (track: MusicFile) => {
+    try {
+      if (currentTrack === track.path) {
+        const playing = await invoke<boolean>("is_playing");
+        if (playing) {
+          await invoke("pause_music");
+          setIsPlaying(false);
+        } else {
+          await invoke("resume_music");
+          setIsPlaying(true);
+        }
+      } else {
+        await onPlay(track.path);
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error("Failed to toggle playback:", error);
     }
   };
 
@@ -82,10 +114,14 @@ export function MusicList({ onPlay, currentTrack }: MusicListProps) {
               className="flex-shrink-0"
               onClick={(e) => {
                 e.stopPropagation();
-                onPlay(track.path);
+                handlePlayToggle(track);
               }}
             >
-              <Play className="w-4 h-4" />
+              {currentTrack === track.path && isPlaying ? (
+                <Pause className="w-4 h-4" />
+              ) : (
+                <Play className="w-4 h-4" />
+              )}
             </Button>
           </div>
         ))}
