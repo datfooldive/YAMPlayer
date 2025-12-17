@@ -91,7 +91,7 @@ export function MusicList({ onPlay, currentTrack }: MusicListProps) {
   return (
     <ScrollArea className="h-full">
       <div className="space-y-1 p-4">
-        {tracks.map((track, index) => (
+        {tracks.map((track) => (
           <div
             key={track.path}
             className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
