@@ -26,7 +26,6 @@ export function Library() {
       <MusicList
         key={refreshKey}
         onPlay={handlePlay}
-        currentTrack={currentTrack}
       />
     </div>
   );

@@ -15,19 +15,23 @@ interface MusicFile {
 
 interface MusicQueueProps {
   onPlay: (path: string) => Promise<void>;
-  currentTrack: string | null;
 }
 
-export function MusicQueue({ onPlay, currentTrack }: MusicQueueProps) {
+export function MusicQueue({ onPlay }: MusicQueueProps) {
   const [tracks, setTracks] = useState<MusicFile[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const { isPlaying, checkPlaying } = useMusicStore();
+  const { isPlaying, checkPlaying, currentTrack, loadCurrentTrack } =
+    useMusicStore();
 
   useEffect(() => {
     loadMusic();
     const interval = setInterval(checkPlaying, 500);
-    return () => clearInterval(interval);
-  }, [checkPlaying]);
+    const trackInterval = setInterval(loadCurrentTrack, 1000);
+    return () => {
+      clearInterval(interval);
+      clearInterval(trackInterval);
+    };
+  }, [checkPlaying, loadCurrentTrack]);
 
   const loadMusic = async () => {
     try {

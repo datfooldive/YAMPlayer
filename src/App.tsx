@@ -7,8 +7,7 @@ import { useLocation } from "react-router";
 
 function App() {
   const location = useLocation();
-  const { currentTrack, trackInfo, loadCurrentTrack, loadTracksFromDb } =
-    useMusicStore();
+  const { loadCurrentTrack, loadTracksFromDb } = useMusicStore();
 
   useEffect(() => {
     loadCurrentTrack();
@@ -25,13 +24,7 @@ function App() {
           <div className="flex-1 overflow-y-auto">
             <Outlet />
           </div>
-          {!isSettingsRoute && (
-            <PlayerControls
-              currentTrack={currentTrack}
-              trackInfo={trackInfo}
-              loadCurrentTrack={loadCurrentTrack}
-            />
-          )}
+          {!isSettingsRoute && <PlayerControls />}
         </div>
       </div>
     </div>

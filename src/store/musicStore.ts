@@ -52,8 +52,9 @@ export const useMusicStore = create<MusicPlayerState>((set, get) => ({
   loadCurrentTrack: async () => {
     try {
       const track = await invoke<string | null>("get_current_track");
+      const prevTrack = get().currentTrack;
       set({ currentTrack: track });
-      if (track) {
+      if (track && track !== prevTrack) {
         get().loadTrackInfo();
       }
     } catch (error) {

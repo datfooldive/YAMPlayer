@@ -4,13 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Play, Pause, SkipBack, SkipForward, Volume2 } from "lucide-react";
 import { useMusicStore } from "@/store/musicStore";
-import type { TrackInfo } from "@/store/musicStore";
-
-interface PlayerControlsProps {
-  currentTrack: string | null;
-  trackInfo: TrackInfo | null;
-  loadCurrentTrack: () => void;
-}
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -18,12 +11,15 @@ function formatTime(seconds: number): string {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
-export function PlayerControls({
-  currentTrack,
-  trackInfo,
-  loadCurrentTrack,
-}: PlayerControlsProps) {
-  const { isPlaying, togglePlayback } = useMusicStore();
+export function PlayerControls() {
+  const {
+    isPlaying,
+    togglePlayback,
+    loadTrackInfo,
+    currentTrack,
+    trackInfo,
+    loadCurrentTrack,
+  } = useMusicStore();
   const [volume, setVolume] = useState<number[]>([50]);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [totalDuration, setTotalDuration] = useState<number | null>(null);
@@ -42,10 +38,20 @@ export function PlayerControls({
   }, []);
 
   useEffect(() => {
+    if (currentTrack) {
+      loadTrackInfo();
+    }
+  }, [currentTrack, loadTrackInfo]);
+
+  useEffect(() => {
+    const trackInterval = setInterval(loadCurrentTrack, 1000);
+    return () => clearInterval(trackInterval);
+  }, [loadCurrentTrack]);
+
+  useEffect(() => {
     const checkPlaying = async () => {
       try {
         await invoke<boolean>("is_playing");
-        // isPlaying is managed by Zustand store
       } catch (error) {
         console.error("Failed to check playing state:", error);
       }
