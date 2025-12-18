@@ -7,10 +7,12 @@ import { useLocation } from "react-router";
 
 function App() {
   const location = useLocation();
-  const { currentTrack, trackInfo, loadCurrentTrack } = useMusicStore();
+  const { currentTrack, trackInfo, loadCurrentTrack, loadTracksFromDb } =
+    useMusicStore();
 
   useEffect(() => {
     loadCurrentTrack();
+    loadTracksFromDb();
   }, []);
 
   const isSettingsRoute = location.pathname === "/settings";
